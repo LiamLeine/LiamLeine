@@ -87,7 +87,19 @@ $("#bestill").onsubmit = async (e) => {
   e.target.reset();
   oppdaterSum();
   visOrdre();
-  const { data: erAdmin } = await sb.rpc("er_admin");
+  const merke = $("#admin-merke");
+  merke.hidden = true;
+  const { data: erAdmin, error: adminFeil } = await sb.rpc("er_admin");
+  if (adminFeil) {
+    console.error("Admin-sjekk feilet:", adminFeil);
+    merke.textContent = "Admin-sjekk feilet";
+    merke.className = "merke merke-feil";
+    merke.hidden = false;
+  } else if (erAdmin) {
+    merke.textContent = "Admin";
+    merke.className = "merke";
+    merke.hidden = false;
+  }
   $("#admin").hidden = !erAdmin;
   if (erAdmin) visAdmin();
 };

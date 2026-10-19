@@ -66,3 +66,6 @@ footer{text-align:center;font-size:.85rem;padding-bottom:30px}
 .admin-dag h3{margin:0 0 8px;text-transform:capitalize}
 .admin-dag p{margin:0 0 10px}
 @media(max-width:520px){.dag .l{display:none}.kal .dag{min-height:64px}}
+
+.merke{display:inline-block;margin-right:8px;padding:2px 8px;border-radius:4px;background:var(--grønn);color:#0b0c07;font-size:.85rem;font-weight:700}
+.merke.merke-feil{background:var(--rød);color:#fff}
