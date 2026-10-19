@@ -36,8 +36,12 @@
       </form>
     </section>
 
+    <div id="faner-admin" class="faner" hidden>
+      <button id="fane-utdeling" class="aktiv">Utdeling</button>
+      <button id="fane-min">Min bestilling</button>
+    </div>
+
     <section id="admin" class="boks" hidden>
-      <div id="admin-neste" class="admin-neste"></div>
       <div class="admin-topp">
         <button id="mnd-forrige" aria-label="Forrige måned">‹</button>
         <h2 id="mnd-tittel"></h2>
@@ -45,8 +49,10 @@
       </div>
       <div id="kal" class="kal"></div>
       <div id="admin-dag" class="admin-dag"></div>
+      <div id="admin-neste" class="admin-neste"></div>
     </section>
 
+    <div id="min-side">
     <section class="oppsummering">
       <div><strong id="s-brukt">0 kr</strong><span>brukt totalt</span></div>
       <div><strong id="s-bokser">0</strong><span>bokser hentet</span></div>
@@ -75,6 +81,7 @@
         <tbody id="rader"></tbody>
       </table>
     </section>
+    </div>
   </div>
 </main>
 <footer>Priser hentes fra databasen og er veiledende.</footer>

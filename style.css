@@ -70,9 +70,13 @@ footer{text-align:center;font-size:.85rem;padding-bottom:30px}
 .merke{display:inline-block;margin-right:8px;padding:2px 8px;border-radius:4px;background:var(--grønn);color:#0b0c07;font-size:.85rem;font-weight:700}
 .merke.merke-feil{background:var(--rød);color:#fff}
 
-.admin-neste{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--linje)}
+.admin-neste{margin-top:18px;padding-top:14px;border-top:1px solid var(--linje)}
 .admin-neste h3{margin:0 0 8px}
 .neste-rad{display:grid;grid-template-columns:minmax(0,1.2fr) auto minmax(0,2fr);gap:10px;align-items:baseline;padding:8px 10px;margin-bottom:6px;background:var(--bg);border-left:6px solid var(--grønn)}
 .neste-rad b{text-transform:capitalize}
 .neste-tot{font-weight:700;font-size:1.1rem}
 @media(max-width:520px){.neste-rad{grid-template-columns:1fr auto}.neste-rad span:last-child{grid-column:1/-1}}
+.merke.merke-bruker{background:var(--linje);color:var(--ink)}
+
+#faner-admin{margin-bottom:16px}
+.dag .tot{font-size:.95rem}

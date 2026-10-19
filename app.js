@@ -87,7 +87,7 @@ $("#bestill").onsubmit = async (e) => {
   e.target.reset();
   oppdaterSum();
   visOrdre();
-  if (!$("#admin").hidden) { visNeste(); visAdmin(); } // oppdater admin-oversikten hvis du er admin
+  if (!$("#faner-admin").hidden) { visNeste(); visAdmin(); } // hold admin-oversikten oppdatert
 };
 
 async function visOrdre() {
@@ -112,11 +112,25 @@ $("#rader").onclick = async (e) => {
   visOrdre();
 };
 
+let adminVist = false;
+function adminFane(admin) {
+  $("#admin").hidden = !admin;
+  $("#min-side").hidden = admin;
+  $("#fane-utdeling").classList.toggle("aktiv", admin);
+  $("#fane-min").classList.toggle("aktiv", !admin);
+}
+$("#fane-utdeling").onclick = () => { adminFane(true); visNeste(); visAdmin(); };
+$("#fane-min").onclick = () => adminFane(false);
+
 async function vis() {
   $("#innlogging").hidden = !!bruker;
   $("#app").hidden = !bruker;
   $("#bruker").hidden = !bruker;
-  if (!bruker) return ($("#admin").hidden = true);
+  if (!bruker) {
+    adminVist = false;
+    $("#faner-admin").hidden = true;
+    return adminFane(false);
+  }
   $("#brukernavn").textContent = bruker.user_metadata?.navn || bruker.email;
   $("#navn-boks").hidden = !!bruker.user_metadata?.navn;
   await lastSmaker();
@@ -134,9 +148,17 @@ async function vis() {
     merke.textContent = "Admin";
     merke.className = "merke";
     merke.hidden = false;
+  } else {
+    merke.textContent = "Bruker";
+    merke.className = "merke merke-bruker";
+    merke.hidden = false;
   }
-  $("#admin").hidden = !erAdmin;
-  if (erAdmin) { visNeste(); visAdmin(); }
+  $("#faner-admin").hidden = !erAdmin;
+  if (erAdmin) {
+    if (!adminVist) { adminVist = true; adminFane(true); } // åpne på Utdeling første gang, men ikke hopp tilbake ved hver oppdatering
+    visNeste();
+    visAdmin();
+  }
 }
 // Utløses ved sidelasting, innlogging og utlogging. setTimeout unngår deadlock i Supabase-klienten.
 sb.auth.onAuthStateChange((_hendelse, sesjon) => {
