@@ -1,0 +1,68 @@
+:root{--bg:#eef1ea;--ink:#15170f;--mut:#5c6153;--kort:#fff;--grønn:#6fb800;--linje:#d5d9cc;--rød:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#12140d;--ink:#eef1e6;--mut:#a3a995;--kort:#1c1f14;--linje:#33372a;--rød:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS",Verdana,sans-serif}
+header{background:#0b0c07;color:#eef1e6;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:4px solid var(--grønn)}
+h1{margin:0;font-size:1.3rem;letter-spacing:.02em}
+h2{margin:0 0 14px;font-size:1.15rem}
+main{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+.boks{background:var(--kort);border:1px solid var(--linje);border-radius:6px;padding:20px;margin-bottom:20px}
+.smal{max-width:380px;margin:40px auto}
+label{display:block;margin-bottom:12px;font-weight:600}
+input{display:block;width:100%;margin-top:4px;padding:10px;font:inherit;border:1px solid var(--linje);border-radius:4px;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+.stor{width:100%;padding:12px;border:0;border-radius:4px;background:var(--grønn);color:#0b0c07;font-weight:700}
+.stor:hover{filter:brightness(1.08)}
+.lenke{background:none;border:0;color:inherit;text-decoration:underline;padding:0}
+.faner{display:flex;margin-bottom:16px;border-bottom:1px solid var(--linje)}
+.faner button{flex:1;padding:10px;background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);font-weight:700}
+.faner .aktiv{color:var(--ink);border-color:var(--grønn)}
+fieldset{border:0;padding:0;margin:0 0 18px}
+legend{font-weight:700;margin-bottom:8px}
+.valg{display:flex;flex-wrap:wrap;gap:8px}
+.valg label,.smaker label{margin:0;font-weight:400;cursor:pointer}
+.valg input,.smaker input{position:absolute;opacity:0;width:1px;height:1px}
+.valg span{display:block;padding:9px 14px;border:1px solid var(--linje);border-radius:4px}
+.valg input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.smaker{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.smaker span{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--linje);border-left:8px solid var(--c);border-radius:4px}
+.smaker b{white-space:nowrap}
+.smaker input:checked+span{outline:3px solid var(--grønn);outline-offset:1px}
+input:focus-visible+span,input:focus-visible,button:focus-visible{outline:3px solid var(--grønn);outline-offset:2px}
+.antall input{width:90px}
+.sum{font-weight:700;min-height:1.5em}
+.melding{min-height:1.5em;color:var(--mut)}
+.feil{color:var(--rød);min-height:1.5em;margin:0 0 8px}
+.oppsummering{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.oppsummering div{background:var(--kort);border:1px solid var(--linje);border-radius:6px;padding:14px}
+.oppsummering strong{display:block;font-size:1.5rem}
+.oppsummering div:first-child{background:#0b0c07;color:#eef1e6;border-color:#0b0c07}
+.oppsummering div:first-child strong{color:var(--grønn);font-size:1.9rem}
+.oppsummering span{font-size:.85rem;color:var(--mut)}
+.oppsummering div:first-child span{color:#a3a995}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--linje)}
+th{font-size:.85rem;color:var(--mut)}
+.planlagt td:first-child{border-left:4px solid var(--grønn)}
+td button{color:var(--rød)}
+.tom,footer{color:var(--mut)}
+footer{text-align:center;font-size:.85rem;padding-bottom:30px}
+@media(max-width:520px){.oppsummering{grid-template-columns:1fr}th:nth-child(3),td:nth-child(3){display:none}}
+
+/* Admin-kalender */
+.admin-topp{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.admin-topp h2{margin:0;text-transform:capitalize}
+.admin-topp button{width:40px;height:36px;border:1px solid var(--linje);border-radius:4px;background:var(--bg);color:var(--ink);font-size:1.2rem}
+.kal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.kal .dn{font-size:.85rem;font-weight:700;color:var(--mut)}
+.kal .dag{min-height:96px;display:flex;flex-direction:column;gap:2px;text-align:left;padding:6px;border:1px solid var(--linje);border-radius:4px;background:var(--bg);color:var(--ink);font-size:.8rem;overflow:hidden}
+.dag .nr{font-weight:700}
+.dag .tot{font-weight:700}
+.dag.har{border-left:6px solid var(--grønn)}
+.dag.annen{opacity:.45}
+.dag.idag{border:2px solid var(--ink)}
+.dag.valgt{outline:3px solid var(--grønn);outline-offset:1px}
+.admin-dag{margin-top:16px;padding-top:12px;border-top:1px solid var(--linje)}
+.admin-dag h3{margin:0 0 8px;text-transform:capitalize}
+.admin-dag p{margin:0 0 10px}
+@media(max-width:520px){.dag .l{display:none}.kal .dag{min-height:64px}}

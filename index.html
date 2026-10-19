@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monster-bestilling</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Monster-bestilling</h1>
+  <div id="bruker" hidden><span id="brukernavn"></span> <button id="loggut" class="lenke">Logg ut</button></div>
+</header>
+<main>
+  <section id="innlogging" class="boks smal" hidden>
+    <div class="faner">
+      <button id="fane-inn" class="aktiv">Logg inn</button>
+      <button id="fane-ny">Ny bruker</button>
+    </div>
+    <form id="skjema-auth">
+      <label>E-post <input id="a-navn" type="email" required autocomplete="email"></label>
+      <label>Passord <input id="a-pass" type="password" required minlength="6" autocomplete="current-password"></label>
+      <p id="a-feil" class="feil" role="alert"></p>
+      <button id="a-knapp" class="stor">Logg inn</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <section id="admin" class="boks" hidden>
+      <div class="admin-topp">
+        <button id="mnd-forrige" aria-label="Forrige måned">‹</button>
+        <h2 id="mnd-tittel"></h2>
+        <button id="mnd-neste" aria-label="Neste måned">›</button>
+      </div>
+      <div id="kal" class="kal"></div>
+      <div id="admin-dag" class="admin-dag"></div>
+    </section>
+
+    <section class="oppsummering">
+      <div><strong id="s-brukt">0 kr</strong><span>brukt totalt</span></div>
+      <div><strong id="s-bokser">0</strong><span>bokser hentet</span></div>
+      <div><strong id="s-planlagt">0 kr</strong><span>planlagt fremover</span></div>
+    </section>
+
+    <section class="boks">
+      <h2>Bestill Monster</h2>
+      <form id="bestill">
+        <fieldset><legend>Hvilke ukedager vil du ha?</legend>
+          <div id="dager" class="valg"></div></fieldset>
+        <fieldset><legend>Velg smak</legend>
+          <div id="smaker" class="smaker"></div></fieldset>
+        <label class="antall">Antall per dag <input id="antall" type="number" min="1" max="3" value="1"></label>
+        <p id="sum" class="sum"></p>
+        <p id="b-melding" class="melding" role="status"></p>
+        <button class="stor">Legg inn bestilling</button>
+      </form>
+    </section>
+
+    <section class="boks">
+      <h2>Mine bestillinger</h2>
+      <p id="tom" class="tom">Ingen bestillinger ennå. Velg dager og smak ovenfor.</p>
+      <table id="tabell" hidden>
+        <thead><tr><th>Dato</th><th>Smak</th><th>Antall</th><th>Pris</th><th></th></tr></thead>
+        <tbody id="rader"></tbody>
+      </table>
+    </section>
+  </div>
+</main>
+<footer>Priser hentes fra databasen og er veiledende.</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
