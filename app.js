@@ -87,21 +87,7 @@ $("#bestill").onsubmit = async (e) => {
   e.target.reset();
   oppdaterSum();
   visOrdre();
-  const merke = $("#admin-merke");
-  merke.hidden = true;
-  const { data: erAdmin, error: adminFeil } = await sb.rpc("er_admin");
-  if (adminFeil) {
-    console.error("Admin-sjekk feilet:", adminFeil);
-    merke.textContent = "Admin-sjekk feilet";
-    merke.className = "merke merke-feil";
-    merke.hidden = false;
-  } else if (erAdmin) {
-    merke.textContent = "Admin";
-    merke.className = "merke";
-    merke.hidden = false;
-  }
-  $("#admin").hidden = !erAdmin;
-  if (erAdmin) visAdmin();
+  if (!$("#admin").hidden) { visNeste(); visAdmin(); } // oppdater admin-oversikten hvis du er admin
 };
 
 async function visOrdre() {
@@ -136,6 +122,21 @@ async function vis() {
   await lastSmaker();
   oppdaterSum();
   visOrdre();
+  const merke = $("#admin-merke");
+  merke.hidden = true;
+  const { data: erAdmin, error: adminFeil } = await sb.rpc("er_admin");
+  if (adminFeil) {
+    console.error("Admin-sjekk feilet:", adminFeil);
+    merke.textContent = "Admin-sjekk feilet";
+    merke.className = "merke merke-feil";
+    merke.hidden = false;
+  } else if (erAdmin) {
+    merke.textContent = "Admin";
+    merke.className = "merke";
+    merke.hidden = false;
+  }
+  $("#admin").hidden = !erAdmin;
+  if (erAdmin) { visNeste(); visAdmin(); }
 }
 // Utløses ved sidelasting, innlogging og utlogging. setTimeout unngår deadlock i Supabase-klienten.
 sb.auth.onAuthStateChange((_hendelse, sesjon) => {
@@ -207,3 +208,21 @@ $("#navn-skjema").onsubmit = async (e) => {
   $("#brukernavn").textContent = bruker.user_metadata.navn;
   $("#navn-boks").hidden = true;
 };
+
+// Oversikt over de neste 14 dagene (alle brukeres bestillinger), uavhengig av kalender og egne bestillinger
+async function visNeste() {
+  const boks = $("#admin-neste"), start = new Date(), slutt = new Date();
+  slutt.setDate(slutt.getDate() + 14);
+  const { data, error } = await sb.rpc("admin_bestillinger", { fra: iso(start), til: iso(slutt) });
+  if (error) return (boks.textContent = "Kunne ikke hente bestillinger.");
+  const dager = {};
+  data.forEach((o) => {
+    const d = (dager[o.dato] ||= { tot: 0, smaker: {} });
+    d.tot += o.antall;
+    d.smaker[o.smak] = (d.smaker[o.smak] || 0) + o.antall;
+  });
+  const rader = Object.entries(dager).map(([dato, d]) =>
+    `<div class="neste-rad"><b>${pent(dato)}</b><span class="neste-tot">${d.tot} ${d.tot === 1 ? "boks" : "bokser"}</span>` +
+    `<span>${Object.entries(d.smaker).map(([s, n]) => `${n}× ${esc(s)}`).join(", ")}</span></div>`);
+  boks.innerHTML = "<h3>Ta med de neste dagene</h3>" + (rader.length ? rader.join("") : "<p class='tom'>Ingen bestillinger de neste 14 dagene.</p>");
+}
