@@ -1,3 +1,4 @@
+document.querySelector("#versjon").textContent = "· v7";
 const DAGER = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
 const $ = (s) => document.querySelector(s);

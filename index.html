@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Monster-bestilling</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <header>
@@ -37,8 +37,8 @@
     </section>
 
     <div id="faner-admin" class="faner" hidden>
-      <button id="fane-utdeling" class="aktiv">Utdeling</button>
-      <button id="fane-min">Min bestilling</button>
+      <button type="button" id="fane-utdeling" class="aktiv">Utdeling</button>
+      <button type="button" id="fane-min">Min bestilling</button>
     </div>
 
     <section id="admin" class="boks" hidden>
@@ -84,9 +84,9 @@
     </div>
   </div>
 </main>
-<footer>Priser hentes fra databasen og er veiledende.</footer>
+<footer>Priser hentes fra databasen og er veiledende. <span id="versjon"></span></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

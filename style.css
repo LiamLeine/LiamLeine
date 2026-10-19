@@ -1,6 +1,7 @@
 :root{--bg:#eef1ea;--ink:#15170f;--mut:#5c6153;--kort:#fff;--grønn:#6fb800;--linje:#d5d9cc;--rød:#b3261e}
 @media (prefers-color-scheme:dark){:root{--bg:#12140d;--ink:#eef1e6;--mut:#a3a995;--kort:#1c1f14;--linje:#33372a;--rød:#ff8a80}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS",Verdana,sans-serif}
 header{background:#0b0c07;color:#eef1e6;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:4px solid var(--grønn)}
 h1{margin:0;font-size:1.3rem;letter-spacing:.02em}
