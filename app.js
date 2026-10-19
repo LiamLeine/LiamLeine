@@ -28,6 +28,8 @@ function velgFane(m) {
   $("#fane-ny").classList.toggle("aktiv", m === "ny");
   $("#a-knapp").textContent = m === "inn" ? "Logg inn" : "Opprett bruker";
   $("#a-pass").autocomplete = m === "inn" ? "current-password" : "new-password";
+  $("#navn-felt").hidden = m !== "ny";
+  $("#a-fullnavn").required = m === "ny";
   $("#a-feil").textContent = "";
 }
 $("#fane-inn").onclick = () => velgFane("inn");
@@ -38,7 +40,9 @@ $("#skjema-auth").onsubmit = async (e) => {
   const email = $("#a-navn").value.trim(), password = $("#a-pass").value, feil = $("#a-feil");
   feil.textContent = "";
   if (modus === "ny") {
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const navn = $("#a-fullnavn").value.trim();
+    if (navn.length < 2) return (feil.textContent = "Skriv inn fullt navn.");
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { navn } } });
     if (error) return (feil.textContent = error.message.includes("registered") ? "E-posten er allerede registrert." : "Kunne ikke opprette bruker: " + error.message);
     if (!data.session) return (feil.textContent = "Sjekk e-posten din og bekreft brukeren før du logger inn.");
   } else {
@@ -71,6 +75,7 @@ $("#bestill").addEventListener("input", oppdaterSum);
 $("#bestill").onsubmit = async (e) => {
   e.preventDefault();
   const melding = $("#b-melding"), dager = valgteDager(), smak = valgtSmak();
+  if (!bruker.user_metadata?.navn) return (melding.textContent = "Legg inn navnet ditt først.");
   if (!dager.length) return (melding.textContent = "Velg minst én ukedag.");
   const antall = Math.max(1, Math.min(3, +$("#antall").value || 1));
   const datoer = dager.map(nesteDato);
@@ -114,7 +119,8 @@ async function vis() {
   $("#app").hidden = !bruker;
   $("#bruker").hidden = !bruker;
   if (!bruker) return ($("#admin").hidden = true);
-  $("#brukernavn").textContent = bruker.email;
+  $("#brukernavn").textContent = bruker.user_metadata?.navn || bruker.email;
+  $("#navn-boks").hidden = !!bruker.user_metadata?.navn;
   await lastSmaker();
   oppdaterSum();
   visOrdre();
@@ -166,7 +172,7 @@ function visDag() {
   const tot = dagens.reduce((t, o) => t + o.antall, 0);
   boks.innerHTML = `<h3>${pent(valgtDato)}</h3>` + (tot ? `<p><b>Ta med ${tot} ${tot === 1 ? "boks" : "bokser"} i alt</b></p>` +
     Object.entries(grupper).map(([smak, l]) =>
-      `<p><b>${l.reduce((t, o) => t + o.antall, 0)}× ${esc(smak)}</b><br><small>${l.map((o) => esc(o.epost) + (o.antall > 1 ? ` (${o.antall})` : "")).join(", ")}</small></p>`).join("")
+      `<p><b>${l.reduce((t, o) => t + o.antall, 0)}× ${esc(smak)}</b><br><small>${l.map((o) => esc(o.navn || o.epost) + (o.antall > 1 ? ` (${o.antall})` : "")).join(", ")}</small></p>`).join("")
     : "<p class='tom'>Ingen bestillinger denne dagen.</p>");
 }
 
@@ -179,3 +185,13 @@ $("#kal").onclick = (e) => {
 };
 $("#mnd-forrige").onclick = () => { adminMnd = new Date(adminMnd.getFullYear(), adminMnd.getMonth() - 1, 1); visAdmin(); };
 $("#mnd-neste").onclick = () => { adminMnd = new Date(adminMnd.getFullYear(), adminMnd.getMonth() + 1, 1); visAdmin(); };
+
+// ---- Navn (for eksisterende brukere som mangler det) ----
+$("#navn-skjema").onsubmit = async (e) => {
+  e.preventDefault();
+  const { data, error } = await sb.auth.updateUser({ data: { navn: $("#n-navn").value.trim() } });
+  if (error) return ($("#b-melding").textContent = "Kunne ikke lagre navnet. Prøv igjen.");
+  bruker = data.user;
+  $("#brukernavn").textContent = bruker.user_metadata.navn;
+  $("#navn-boks").hidden = true;
+};
