@@ -3,30 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monsters.inc</title>
-<link rel="stylesheet" href="style.css?v=7">
+<title>Monster-bestilling</title>
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <header>
-  <h1>Monsters.inc</h1>
+  <h1>Monster-bestilling</h1>
+  <a id="header-logginn" class="header-knapp til-logginn" href="#innlogging">Logg inn</a>
   <div id="bruker" hidden><span id="admin-merke" class="merke" hidden></span><span id="brukernavn"></span> <button id="loggut" class="lenke">Logg ut</button></div>
 </header>
 <main>
-  <section id="innlogging" class="boks smal" hidden>
-    <div class="faner">
-      <button id="fane-inn" class="aktiv">Logg inn</button>
-      <button id="fane-ny">Ny bruker</button>
-    </div>
-    <form id="skjema-auth">
-      <label id="navn-felt" hidden>Fullt navn <input id="a-fullnavn" minlength="2" maxlength="60" autocomplete="name"></label>
-      <label>E-post <input id="a-navn" type="email" required autocomplete="email"></label>
-      <label>Passord <input id="a-pass" type="password" required minlength="6" autocomplete="current-password"></label>
-      <p id="a-feil" class="feil" role="alert"></p>
-      <button id="a-knapp" class="stor">Logg inn</button>
-    </form>
-  </section>
+  <div id="topp" class="topp">
+    <section id="hero" class="hero">
+      <h2>Bestill Monster til skolen</h2>
+      <p>Velg hvilke ukedager du vil ha, hvilken smak, og se hva det koster. Du har også full oversikt over hva du har brukt totalt.</p>
+      <ol class="steg">
+        <li><b>1</b><span>Lag en bruker eller logg inn</span></li>
+        <li><b>2</b><span>Velg ukedager og smak</span></li>
+        <li><b>3</b><span>Drikken deles ut på dagene du har valgt</span></li>
+      </ol>
+      <p class="hero-merk">Du kan se hele siden under, men må logge inn for å bestille.</p>
+    </section>
 
-  <div id="app" hidden>
+    <section id="innlogging" class="boks">
+      <div class="faner">
+        <button type="button" id="fane-inn" class="aktiv">Logg inn</button>
+        <button type="button" id="fane-ny">Ny bruker</button>
+      </div>
+      <form id="skjema-auth">
+        <label id="navn-felt" hidden>Fullt navn <input id="a-fullnavn" minlength="2" maxlength="60" autocomplete="name"></label>
+        <label>E-post <input id="a-navn" type="email" required autocomplete="email"></label>
+        <label>Passord <input id="a-pass" type="password" required minlength="6" autocomplete="current-password"></label>
+        <p id="a-feil" class="feil" role="alert"></p>
+        <button id="a-knapp" class="stor">Logg inn</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="app">
     <section id="navn-boks" class="boks" hidden>
       <h2>Hva heter du?</h2>
       <p>Navnet brukes av admin for å dele ut Monster til riktig person.</p>
@@ -42,6 +56,7 @@
     </div>
 
     <section id="admin" class="boks" hidden>
+      <div id="admin-lager" class="admin-lager"></div>
       <div class="admin-topp">
         <button id="mnd-forrige" aria-label="Forrige måned">‹</button>
         <h2 id="mnd-tittel"></h2>
@@ -54,28 +69,31 @@
 
     <div id="min-side">
     <section class="oppsummering">
-      <div><strong id="s-brukt">0 kr</strong><span>brukt totalt</span></div>
-      <div><strong id="s-bokser">0</strong><span>bokser hentet</span></div>
-      <div><strong id="s-planlagt">0 kr</strong><span>planlagt fremover</span></div>
+      <div><strong id="s-brukt">–</strong><span>brukt totalt</span></div>
+      <div><strong id="s-bokser">–</strong><span>bokser hentet</span></div>
+      <div><strong id="s-planlagt">–</strong><span>planlagt fremover</span></div>
     </section>
 
     <section class="boks">
       <h2>Bestill Monster</h2>
+      <p id="las" class="las">Logg inn for å bestille. Du kan se smaker, priser og lagerstatus nå, men ikke legge inn bestilling før du er innlogget. <a class="til-logginn" href="#innlogging">Logg inn</a></p>
       <form id="bestill">
-        <fieldset><legend>Hvilke ukedager vil du ha?</legend>
-          <div id="dager" class="valg"></div></fieldset>
-        <fieldset><legend>Velg smak</legend>
-          <div id="smaker" class="smaker"></div></fieldset>
-        <label class="antall">Antall per dag <input id="antall" type="number" min="1" max="3" value="1"></label>
-        <p id="sum" class="sum"></p>
-        <p id="b-melding" class="melding" role="status"></p>
-        <button class="stor">Legg inn bestilling</button>
+        <div id="bestill-innhold" inert>
+          <fieldset><legend>Hvilke ukedager vil du ha?</legend>
+            <div id="dager" class="valg"></div></fieldset>
+          <fieldset><legend>Velg smak</legend>
+            <div id="smaker" class="smaker"></div></fieldset>
+          <label class="antall">Antall per dag <input id="antall" type="number" min="1" max="3" value="1"></label>
+          <p id="sum" class="sum"></p>
+          <p id="b-melding" class="melding" role="status"></p>
+          <button class="stor">Legg inn bestilling</button>
+        </div>
       </form>
     </section>
 
     <section class="boks">
       <h2>Mine bestillinger</h2>
-      <p id="tom" class="tom">Ingen bestillinger ennå. Velg dager og smak ovenfor.</p>
+      <p id="tom" class="tom">Logg inn for å se bestillingene dine og hvor mye du har brukt totalt.</p>
       <table id="tabell" hidden>
         <thead><tr><th>Dato</th><th>Smak</th><th>Antall</th><th>Pris</th><th></th></tr></thead>
         <tbody id="rader"></tbody>
@@ -87,6 +105,6 @@
 <footer>Priser hentes fra databasen og er veiledende. <span id="versjon"></span></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

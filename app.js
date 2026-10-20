@@ -1,4 +1,4 @@
-document.querySelector("#versjon").textContent = "· v7";
+document.querySelector("#versjon").textContent = "· v9";
 const DAGER = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
 const $ = (s) => document.querySelector(s);
@@ -56,11 +56,14 @@ $("#loggut").onclick = () => sb.auth.signOut();
 
 // ---- Smaker (hentes fra databasen) ----
 async function lastSmaker() {
+  const forrige = valgtSmak()?.id;
   const { data, error } = await sb.from("smaker").select("*").eq("aktiv", true).order("pris").order("navn");
   if (error) return ($("#b-melding").textContent = "Kunne ikke hente smaker.");
   SMAKER = data;
-  $("#smaker").innerHTML = SMAKER.map((s, i) =>
-    `<label><input type="radio" name="smak" value="${esc(s.id)}" ${i === 0 ? "checked" : ""}><span style="--c:${esc(s.farge)}">${esc(s.navn)}<b>${kr(s.pris)}</b></span></label>`).join("");
+  const valgt = SMAKER.find((s) => s.id === forrige && s.lager > 0) || SMAKER.find((s) => s.lager > 0);
+  $("#smaker").innerHTML = SMAKER.map((s) =>
+    `<label><input type="radio" name="smak" value="${esc(s.id)}" ${s.lager <= 0 ? "disabled" : ""} ${valgt && valgt.id === s.id ? "checked" : ""}>` +
+    `<span style="--c:${esc(s.farge)}"><i>${esc(s.navn)}<small>${s.lager > 0 ? s.lager + " igjen" : "Utsolgt"}</small></i><b>${kr(s.pris)}</b></span></label>`).join("");
 }
 $("#dager").innerHTML = DAGER.map((d, i) => `<label><input type="checkbox" name="dag" value="${i}"><span>${d}</span></label>`).join("");
 
@@ -75,20 +78,27 @@ $("#bestill").addEventListener("input", oppdaterSum);
 // ---- Bestilling ----
 $("#bestill").onsubmit = async (e) => {
   e.preventDefault();
+  if (!bruker) return;
   const melding = $("#b-melding"), dager = valgteDager(), smak = valgtSmak();
   if (!bruker.user_metadata?.navn) return (melding.textContent = "Legg inn navnet ditt først.");
   if (!dager.length) return (melding.textContent = "Velg minst én ukedag.");
+  if (!smak) return (melding.textContent = "Alt er utsolgt akkurat nå.");
   const antall = Math.max(1, Math.min(3, +$("#antall").value || 1));
   const datoer = dager.map(nesteDato);
-  // Ny bestilling erstatter eventuell eksisterende bestilling samme dag
-  await sb.from("bestillinger").delete().in("dato", datoer);
-  const { error } = await sb.from("bestillinger").insert(datoer.map((dato) => ({ dato, smak_id: smak.id, antall })));
-  if (error) return (melding.textContent = "Kunne ikke lagre bestillingen. Prøv igjen.");
+  // Alt skjer i én transaksjon i databasen: ny bestilling erstatter gammel samme dag, og lageret trekkes ned
+  const { error } = await sb.rpc("bestill", { datoer, p_smak: smak.id, p_antall: antall });
+  if (error) {
+    await lastSmaker();
+    return (melding.textContent = /lager/i.test(error.message)
+      ? "Ikke nok på lager til hele bestillingen. Velg færre dager, lavere antall eller en annen smak."
+      : "Kunne ikke lagre bestillingen. Prøv igjen.");
+  }
+  await lastSmaker();
   melding.textContent = `Registrert: ${smak.navn} for ${dager.length} ${dager.length === 1 ? "dag" : "dager"}.`;
   e.target.reset();
   oppdaterSum();
   visOrdre();
-  if (!$("#faner-admin").hidden) { visNeste(); visAdmin(); } // hold admin-oversikten oppdatert
+  if (!$("#faner-admin").hidden) { visLager(); visNeste(); visAdmin(); } // hold admin-oversikten oppdatert
 };
 
 async function visOrdre() {
@@ -110,6 +120,7 @@ $("#rader").onclick = async (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
   await sb.from("bestillinger").delete().eq("id", id);
+  await lastSmaker(); // avbestilling gir varene tilbake på lager
   visOrdre();
 };
 
@@ -120,18 +131,30 @@ function adminFane(admin) {
   $("#fane-utdeling").classList.toggle("aktiv", admin);
   $("#fane-min").classList.toggle("aktiv", !admin);
 }
-$("#fane-utdeling").onclick = () => { adminFane(true); visNeste(); visAdmin(); };
+$("#fane-utdeling").onclick = async () => { adminFane(true); await lastSmaker(); visLager(); visNeste(); visAdmin(); };
 $("#fane-min").onclick = () => adminFane(false);
 
 async function vis() {
-  $("#innlogging").hidden = !!bruker;
-  $("#app").hidden = !bruker;
-  $("#bruker").hidden = !bruker;
-  if (!bruker) {
+  const inn = !!bruker;
+  $("#topp").hidden = inn;                 // velkomst og innlogging vises bare for besøkende
+  $("#header-logginn").hidden = inn;
+  $("#bruker").hidden = !inn;
+  $("#las").hidden = inn;
+  $("#bestill-innhold").toggleAttribute("inert", !inn); // besøkende ser skjemaet, men kan ikke bruke det
+  if (!inn) {
     adminVist = false;
     $("#faner-admin").hidden = true;
-    return adminFane(false);
+    adminFane(false);
+    $("#navn-boks").hidden = true;
+    ["#s-brukt", "#s-bokser", "#s-planlagt"].forEach((s) => ($(s).textContent = "–"));
+    $("#tom").textContent = "Logg inn for å se bestillingene dine og hvor mye du har brukt totalt.";
+    $("#tom").hidden = false;
+    $("#tabell").hidden = true;
+    $("#b-melding").textContent = "";
+    await lastSmaker();
+    return oppdaterSum();
   }
+  $("#tom").textContent = "Ingen bestillinger ennå. Velg dager og smak ovenfor.";
   $("#brukernavn").textContent = bruker.user_metadata?.navn || bruker.email;
   $("#navn-boks").hidden = !!bruker.user_metadata?.navn;
   await lastSmaker();
@@ -157,6 +180,7 @@ async function vis() {
   $("#faner-admin").hidden = !erAdmin;
   if (erAdmin) {
     if (!adminVist) { adminVist = true; adminFane(true); } // åpne på Utdeling første gang, men ikke hopp tilbake ved hver oppdatering
+    visLager();
     visNeste();
     visAdmin();
   }
@@ -249,3 +273,26 @@ async function visNeste() {
     `<span>${Object.entries(d.smaker).map(([s, n]) => `${n}× ${esc(s)}`).join(", ")}</span></div>`);
   boks.innerHTML = "<h3>Ta med de neste dagene</h3>" + (rader.length ? rader.join("") : "<p class='tom'>Ingen bestillinger de neste 14 dagene.</p>");
 }
+
+// ---- Admin: rediger lager ----
+function visLager() {
+  $("#admin-lager").innerHTML = "<h3>Igjen på lager</h3>" + SMAKER.map((s) =>
+    `<div class="lager-rad ${s.lager <= 5 ? "lav" : ""}"><label for="l-${esc(s.id)}">${esc(s.navn)}</label>` +
+    `<input id="l-${esc(s.id)}" type="number" min="0" step="1" value="${s.lager}"><button type="button" data-lager="${esc(s.id)}">Lagre</button></div>`).join("") +
+    '<p id="lager-melding" class="melding" role="status">Tallet går ned automatisk når noen bestiller, og opp igjen ved avbestilling.</p>';
+}
+$("#admin-lager").onclick = async (e) => {
+  const id = e.target.dataset.lager;
+  if (!id) return;
+  const n = Number(document.getElementById("l-" + id).value), melding = $("#lager-melding");
+  if (!Number.isInteger(n) || n < 0) return (melding.textContent = "Skriv inn et helt tall fra 0 og oppover.");
+  const { data, error } = await sb.from("smaker").update({ lager: n }).eq("id", id).select();
+  if (error || !data?.length) return (melding.textContent = "Kunne ikke lagre. Du må være admin, og oppsett.sql må være kjørt.");
+  await lastSmaker();
+  visLager();
+  $("#lager-melding").textContent = "Lagret.";
+};
+
+// Lenker til innlogging flytter markøren til e-postfeltet
+document.querySelectorAll(".til-logginn").forEach((a) =>
+  a.addEventListener("click", () => setTimeout(() => $("#a-navn").focus({ preventScroll: true }), 400)));
