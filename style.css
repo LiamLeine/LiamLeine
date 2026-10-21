@@ -115,3 +115,5 @@ footer{text-align:center;font-size:.85rem;padding-bottom:30px}
   .dag .l{display:none}.kal .dag{min-height:64px}
   .neste-rad{grid-template-columns:1fr auto}.neste-rad span:last-child{grid-column:1/-1}
 }
+
+.betaling{margin:16px 0 0;padding:12px 14px;background:var(--flate);border:1px solid var(--linje);border-radius:8px}

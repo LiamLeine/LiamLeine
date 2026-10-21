@@ -1,4 +1,4 @@
-document.querySelector("#versjon").textContent = "· v9";
+document.querySelector("#versjon").textContent = "· v10";
 const DAGER = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
 const $ = (s) => document.querySelector(s);
@@ -110,6 +110,7 @@ async function visOrdre() {
   $("#s-brukt").textContent = kr(sum(brukt));
   $("#s-bokser").textContent = brukt.reduce((t, o) => t + o.antall, 0);
   $("#s-planlagt").textContent = kr(sum(planlagt));
+  $("#betaling-sum").textContent = planlagt.length ? `Du har ${kr(sum(planlagt))} planlagt fremover.` : "";
   $("#tom").hidden = data.length > 0;
   $("#tabell").hidden = !data.length;
   $("#rader").innerHTML = data.map((o) => `<tr class="${o.dato > idag ? "planlagt" : ""}">
@@ -151,6 +152,7 @@ async function vis() {
     $("#tom").hidden = false;
     $("#tabell").hidden = true;
     $("#b-melding").textContent = "";
+    $("#betaling-sum").textContent = "";
     await lastSmaker();
     return oppdaterSum();
   }
