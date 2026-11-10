@@ -42,19 +42,23 @@ input:focus-visible+span,button:focus-visible,a:focus-visible{outline:3px solid 
 fieldset{border:0;padding:0;margin:0 0 18px}
 legend{font-weight:700;margin-bottom:8px}
 .valg{display:flex;flex-wrap:wrap;gap:8px}
-.valg label,.smaker label{margin:0;font-weight:400;cursor:pointer}
-.valg input,.smaker input{position:absolute;opacity:0;width:1px;height:1px}
+.valg label{margin:0;font-weight:400;cursor:pointer}
+.valg input{position:absolute;opacity:0;width:1px;height:1px}
 .valg span{display:block;padding:9px 16px;background:#fff;border:1px solid #c3d0e4;border-radius:8px}
 .valg input:checked+span{background:var(--blå);border-color:var(--blå);color:#fff}
-.smaker{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-.smaker span{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;background:#fff;border:1px solid var(--linje);border-left:6px solid var(--c);border-radius:10px}
-.smaker input:checked+span{background:var(--blå-l);border-color:var(--blå);border-left-color:var(--c);box-shadow:0 0 0 2px var(--blå)}
-.smaker b{white-space:nowrap}
-.smaker i{font-style:normal;display:flex;flex-direction:column}
-.smaker small{color:var(--mut);font-size:.8rem}
-.smaker input:disabled+span{opacity:.5}
-.smaker label:has(input:disabled){cursor:not-allowed}
-.antall input{width:90px}
+.smaker{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.smak{padding:10px 12px;background:#fff;border:1px solid var(--linje);border-left:6px solid var(--c);border-radius:10px}
+.smak.valgt{background:var(--blå-l);border-color:var(--blå);border-left-color:var(--c);box-shadow:0 0 0 2px var(--blå)}
+.smak.utsolgt{opacity:.5}
+.smak-topp{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.smak b{white-space:nowrap}
+.smak i{font-style:normal;display:flex;flex-direction:column}
+.smak small,legend small{color:var(--mut);font-size:.8rem;font-weight:400}
+.teller{display:flex;align-items:center;gap:12px;margin-top:8px}
+.teller button{width:34px;height:34px;border:1px solid #c3d0e4;border-radius:8px;background:#fff;color:var(--blå-m);font-size:1.2rem;line-height:1}
+.teller button:hover:not(:disabled){background:var(--blå-l)}
+.teller button:disabled{opacity:.35;cursor:not-allowed}
+.teller output{min-width:1.5em;text-align:center;font-weight:700}
 .sum{font-weight:700;min-height:1.5em}
 .melding{min-height:1.5em;color:var(--mut)}
 .feil{color:var(--rød);min-height:1.5em;margin:0 0 8px}

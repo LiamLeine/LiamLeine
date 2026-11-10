@@ -1,4 +1,4 @@
-document.querySelector("#versjon").textContent = "· v10";
+document.querySelector("#versjon").textContent = "· v11";
 const DAGER = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
 const $ = (s) => document.querySelector(s);
@@ -55,23 +55,50 @@ $("#skjema-auth").onsubmit = async (e) => {
 $("#loggut").onclick = () => sb.auth.signOut();
 
 // ---- Smaker (hentes fra databasen) ----
+let valg = {}; // smak-id -> antall per dag, f.eks. { monarch: 1, "mango-loco": 2 }
+const MAKS = 3; // maks bokser per smak per dag
+
 async function lastSmaker() {
-  const forrige = valgtSmak()?.id;
   const { data, error } = await sb.from("smaker").select("*").eq("aktiv", true).order("pris").order("navn");
   if (error) return ($("#b-melding").textContent = "Kunne ikke hente smaker.");
   SMAKER = data;
-  const valgt = SMAKER.find((s) => s.id === forrige && s.lager > 0) || SMAKER.find((s) => s.lager > 0);
-  $("#smaker").innerHTML = SMAKER.map((s) =>
-    `<label><input type="radio" name="smak" value="${esc(s.id)}" ${s.lager <= 0 ? "disabled" : ""} ${valgt && valgt.id === s.id ? "checked" : ""}>` +
-    `<span style="--c:${esc(s.farge)}"><i>${esc(s.navn)}<small>${s.lager > 0 ? s.lager + " igjen" : "Utsolgt"}</small></i><b>${kr(s.pris)}</b></span></label>`).join("");
+  tegnSmaker();
 }
+function tegnSmaker() {
+  // Rydd bort valg som ikke lenger går (utsolgt, skjult eller mer enn lageret)
+  for (const id of Object.keys(valg)) {
+    const s = SMAKER.find((x) => x.id === id), maks = s ? Math.min(MAKS, s.lager) : 0;
+    if (maks <= 0) delete valg[id]; else valg[id] = Math.min(valg[id], maks);
+  }
+  $("#smaker").innerHTML = SMAKER.map((s) => {
+    const n = valg[s.id] || 0, tom = s.lager <= 0, maks = Math.min(MAKS, s.lager);
+    return `<div class="smak ${n ? "valgt" : ""} ${tom ? "utsolgt" : ""}" style="--c:${esc(s.farge)}">` +
+      `<div class="smak-topp"><i>${esc(s.navn)}<small>${tom ? "Utsolgt" : s.lager + " igjen"}</small></i><b>${kr(s.pris)}</b></div>` +
+      `<div class="teller" role="group" aria-label="Antall ${esc(s.navn)}">` +
+      `<button type="button" data-smak="${esc(s.id)}" data-d="-1" aria-label="Færre ${esc(s.navn)}" ${n ? "" : "disabled"}>−</button>` +
+      `<output>${n}</output>` +
+      `<button type="button" data-smak="${esc(s.id)}" data-d="1" aria-label="Flere ${esc(s.navn)}" ${n >= maks ? "disabled" : ""}>+</button></div></div>`;
+  }).join("");
+}
+$("#smaker").onclick = (e) => {
+  const knapp = e.target.closest("[data-smak]");
+  if (!knapp) return;
+  const id = knapp.dataset.smak, s = SMAKER.find((x) => x.id === id);
+  const ny = Math.max(0, Math.min(MAKS, s.lager, (valg[id] || 0) + Number(knapp.dataset.d)));
+  if (ny) valg[id] = ny; else delete valg[id];
+  tegnSmaker();
+  oppdaterSum();
+  document.querySelector(`[data-smak="${id}"][data-d="${knapp.dataset.d}"]:not(:disabled)`)?.focus(); // behold tastaturfokus
+};
 $("#dager").innerHTML = DAGER.map((d, i) => `<label><input type="checkbox" name="dag" value="${i}"><span>${d}</span></label>`).join("");
 
 const valgteDager = () => [...document.querySelectorAll("[name=dag]:checked")].map((x) => +x.value);
-const valgtSmak = () => { const r = document.querySelector("[name=smak]:checked"); return r && SMAKER.find((s) => s.id === r.value); };
 function oppdaterSum() {
-  const n = valgteDager().length, s = valgtSmak(), a = Math.max(1, Math.min(3, +$("#antall").value || 1));
-  $("#sum").textContent = n && s ? `${n} ${n === 1 ? "dag" : "dager"} × ${a} × ${kr(s.pris)} = ${kr(n * a * s.pris)}` : "";
+  const n = valgteDager().length;
+  const bokser = Object.values(valg).reduce((t, a) => t + a, 0);
+  const perDag = SMAKER.reduce((t, s) => t + (valg[s.id] || 0) * s.pris, 0);
+  $("#sum").textContent = n && bokser
+    ? `${n} ${n === 1 ? "dag" : "dager"} × ${bokser} ${bokser === 1 ? "boks" : "bokser"} = ${kr(n * perDag)}` : "";
 }
 $("#bestill").addEventListener("input", oppdaterSum);
 
@@ -79,23 +106,26 @@ $("#bestill").addEventListener("input", oppdaterSum);
 $("#bestill").onsubmit = async (e) => {
   e.preventDefault();
   if (!bruker) return;
-  const melding = $("#b-melding"), dager = valgteDager(), smak = valgtSmak();
+  const melding = $("#b-melding"), dager = valgteDager();
+  const valgte = Object.entries(valg).map(([smak_id, antall]) => ({ smak_id, antall }));
   if (!bruker.user_metadata?.navn) return (melding.textContent = "Legg inn navnet ditt først.");
   if (!dager.length) return (melding.textContent = "Velg minst én ukedag.");
-  if (!smak) return (melding.textContent = "Alt er utsolgt akkurat nå.");
-  const antall = Math.max(1, Math.min(3, +$("#antall").value || 1));
+  if (!valgte.length) return (melding.textContent = "Velg minst én smak med plusstegnet.");
   const datoer = dager.map(nesteDato);
-  // Alt skjer i én transaksjon i databasen: ny bestilling erstatter gammel samme dag, og lageret trekkes ned
-  const { error } = await sb.rpc("bestill", { datoer, p_smak: smak.id, p_antall: antall });
+  // Alt skjer i én transaksjon i databasen: samme smak samme dag erstattes, andre smaker beholdes, og lageret trekkes ned
+  const { error } = await sb.rpc("bestill", { datoer, valg: valgte });
   if (error) {
     await lastSmaker();
+    const av = error.message.match(/lager: (.+)/);
     return (melding.textContent = /lager/i.test(error.message)
-      ? "Ikke nok på lager til hele bestillingen. Velg færre dager, lavere antall eller en annen smak."
+      ? `Ikke nok på lager${av ? " av " + av[1] : ""}. Velg færre dager eller lavere antall.`
       : "Kunne ikke lagre bestillingen. Prøv igjen.");
   }
-  await lastSmaker();
-  melding.textContent = `Registrert: ${smak.navn} for ${dager.length} ${dager.length === 1 ? "dag" : "dager"}.`;
+  const navn = (id) => SMAKER.find((s) => s.id === id)?.navn || id;
+  melding.textContent = `Registrert: ${valgte.map((v) => `${v.antall}× ${navn(v.smak_id)}`).join(", ")} for ${dager.length} ${dager.length === 1 ? "dag" : "dager"}.`;
+  valg = {};
   e.target.reset();
+  await lastSmaker();
   oppdaterSum();
   visOrdre();
   if (!$("#faner-admin").hidden) { visLager(); visNeste(); visAdmin(); } // hold admin-oversikten oppdatert
